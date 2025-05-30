@@ -1,171 +1,274 @@
 
-import React from 'react';
 import Hero from '../components/Hero';
 import MissionSection from '../components/MissionSection';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, Music, Users } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Music, Heart, Users, Calendar, Phone, Mail, MessageCircle } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
-  const upcomingEvents = [
-    {
-      title: 'Sunday Worship Service',
-      date: 'June 2, 2024',
-      location: 'Grace Church, Nairobi',
-      time: '10:00 AM'
-    },
-    {
-      title: 'Gospel Concert - City Square',
-      date: 'June 15, 2024',
-      location: 'City Square, Nairobi',
-      time: '6:00 PM'
-    },
-    {
-      title: 'Youth Conference 2024',
-      date: 'June 22, 2024',
-      location: 'KICC, Nairobi',
-      time: '2:00 PM'
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const scrollToContact = () => {
+    const contactSection = document.getElementById('contact-form');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
       <Hero />
+      
+      {/* Updated About Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gospel-navy mb-6">About Wakilisha Gospel Band</h2>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                <strong>Wakilisha Gospel Band</strong> is a devoted group of young believers who passionately serve God through the unique gifts and talents He has entrusted to us. Our ministry is deeply rooted in worship, and we are committed to using our music and creativity to inspire healing, hope, and transformation.
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                We are widely recognized for our impactful <strong>street worship sessions</strong>, where we bring the presence of God directly to the people—right where they are.
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Our mission is to <strong>touch lives</strong> and remind everyone of <strong>God's deep, unconditional love</strong>.
+              </p>
+            </div>
+            <div className="mt-8">
+              <Link to="/about">
+                <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3">
+                  Learn More About Us
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Mission Section */}
+      {/* Theme Verse Section */}
+      <section className="py-16 bg-gradient-to-r from-gospel-navy to-blue-800 text-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-8">Our Foundation</h2>
+          <blockquote className="text-xl md:text-2xl leading-relaxed italic font-light">
+            "Because I am no longer a stranger but a member of God's household (Ephesians 2:19), and my life is built on the foundation of Christ (v.20), I now choose to live every moment, word, and action in the name of Jesus (Colossians 3:17), giving thanks to God."
+          </blockquote>
+        </div>
+      </section>
+
       <MissionSection />
 
-      {/* Upcoming Events Section */}
-      <section className="py-20 bg-white">
+      {/* Services Preview */}
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gospel-navy mb-6">
-              Upcoming Events
-            </h2>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gospel-navy mb-6">Our Ministry Services</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Join us for worship, fellowship, and community outreach. 
-              Experience the power of Gospel music in person.
+              From intimate worship sessions to large community events, we bring God's love through music
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            {upcomingEvents.map((event, index) => (
-              <Card 
-                key={event.title}
-                className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardContent className="p-6">
-                  <div className="bg-gospel-gold p-3 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                    <Calendar className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gospel-navy mb-2">{event.title}</h3>
-                  <div className="space-y-1 text-gray-600 text-sm mb-4">
-                    <p>{event.date} at {event.time}</p>
-                    <p>{event.location}</p>
-                  </div>
-                  <Button variant="outline" className="w-full border-gospel-gold text-gospel-gold hover:bg-gospel-gold hover:text-white">
-                    Learn More
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-8 text-center">
+                <div className="bg-gospel-cream p-4 rounded-full w-fit mx-auto mb-6">
+                  <Music className="h-10 w-10 text-gospel-gold" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gospel-navy mb-4">Worship Services</h3>
+                <p className="text-gray-600 mb-6">
+                  Leading worship in churches, conferences, and special events with anointed music ministry.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-8 text-center">
+                <div className="bg-gospel-cream p-4 rounded-full w-fit mx-auto mb-6">
+                  <Users className="h-10 w-10 text-gospel-gold" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gospel-navy mb-4">Street Ministry</h3>
+                <p className="text-gray-600 mb-6">
+                  Bringing God's presence to the streets through powerful worship and outreach programs.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-8 text-center">
+                <div className="bg-gospel-cream p-4 rounded-full w-fit mx-auto mb-6">
+                  <Heart className="h-10 w-10 text-gospel-gold" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gospel-navy mb-4">Community Outreach</h3>
+                <p className="text-gray-600 mb-6">
+                  Touching lives in marginalized communities through music, prayer, and acts of love.
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="text-center">
-            <Button 
-              size="lg" 
-              className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg"
-            >
-              View All Events
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <Link to="/services">
+              <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 mr-4">
+                View All Services
+              </Button>
+            </Link>
+            <a href="#booking-form">
+              <Button size="lg" variant="outline" className="border-gospel-gold text-gospel-navy hover:bg-gospel-gold hover:text-white px-8 py-3">
+                Book Now
+              </Button>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Services Preview Section */}
-      <section className="py-20 bg-gray-50">
+      {/* Watch Us Worship Section */}
+      <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gospel-navy mb-6">
-              What We Do
-            </h2>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gospel-navy mb-6">Watch Us Worship</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From worship leading to community outreach, we serve with excellence 
-              and passion in everything we do.
+              Experience the power of worship through our ministry
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Music,
-                title: 'Worship Leading',
-                description: 'Professional worship music for churches, conferences, and special events.',
-                color: 'bg-blue-500'
-              },
-              {
-                icon: Users,
-                title: 'Community Outreach',
-                description: 'Reaching communities with the Gospel through music and ministry.',
-                color: 'bg-green-500'
-              },
-              {
-                icon: Users,
-                title: 'Youth Mentorship',
-                description: 'Mentoring young musicians and believers in faith and music.',
-                color: 'bg-purple-500'
-              }
-            ].map((service, index) => (
-              <Card 
-                key={service.title}
-                className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardContent className="p-8 text-center">
-                  <div className={`${service.color} p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6`}>
-                    <service.icon className="h-8 w-8 text-white" />
+          {/* Video Player Placeholder */}
+          <div className="max-w-4xl mx-auto">
+            <div className="relative bg-gray-200 rounded-lg overflow-hidden shadow-lg aspect-video">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="bg-white p-4 rounded-full mb-4 mx-auto w-fit">
+                    <Music className="h-12 w-12 text-gospel-gold" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-gospel-navy mb-4">{service.title}</h3>
-                  <p className="text-gray-600 leading-relaxed mb-6">{service.description}</p>
-                  <Button variant="outline" className="border-gospel-gold text-gospel-gold hover:bg-gospel-gold hover:text-white">
-                    Learn More
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                  <p className="text-gray-600 text-lg">
+                    Worship video will be embedded here
+                  </p>
+                  <p className="text-gray-500 text-sm mt-2">
+                    YouTube iframe or direct video player
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gospel-navy text-white">
+      {/* Call to Action */}
+      <section className="py-16 bg-gospel-navy text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Join Our Ministry
-          </h2>
-          <p className="text-xl text-gray-200 mb-8 leading-relaxed">
-            Whether you're looking to book us for an event, want to join our band, 
-            or simply want to be part of our community - we'd love to connect with you.
+          <h2 className="text-4xl font-bold mb-6">Join Our Ministry Today</h2>
+          <p className="text-xl text-gray-200 mb-8">
+            Be part of a community that spreads God's love through music and worship
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {user ? (
+              <Button 
+                size="lg" 
+                className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg"
+                onClick={() => navigate('/dashboard')}
+              >
+                Go to Dashboard
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg">
+                  Join Our Ministry
+                </Button>
+              </Link>
+            )}
             <Button 
               size="lg" 
-              className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg"
-            >
-              Contact Us Today
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button 
               variant="outline" 
-              size="lg"
-              className="border-2 border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg"
+              className="border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg"
+              onClick={scrollToContact}
             >
-              Learn Our Story
+              Call Now
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Contact Information */}
+      <section id="contact-form" className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gospel-navy mb-6">Get In Touch</h2>
+            <p className="text-xl text-gray-600">
+              Ready to book us for your event or have questions? Reach out!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <Card className="border-none shadow-lg text-center">
+              <CardContent className="p-8">
+                <div className="bg-green-100 p-4 rounded-full w-fit mx-auto mb-6">
+                  <MessageCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gospel-navy mb-4">WhatsApp</h3>
+                <a 
+                  href="https://wa.me/254757756763" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gospel-gold hover:text-gospel-navy font-medium text-lg"
+                >
+                  0757756763
+                </a>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg text-center">
+              <CardContent className="p-8">
+                <div className="bg-blue-100 p-4 rounded-full w-fit mx-auto mb-6">
+                  <Mail className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gospel-navy mb-4">Email</h3>
+                <a 
+                  href="mailto:wakilishagospelband@gmail.com"
+                  className="text-gospel-gold hover:text-gospel-navy font-medium text-lg"
+                >
+                  wakilishagospelband@gmail.com
+                </a>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg text-center">
+              <CardContent className="p-8">
+                <div className="bg-gospel-cream p-4 rounded-full w-fit mx-auto mb-6">
+                  <Phone className="h-8 w-8 text-gospel-gold" />
+                </div>
+                <h3 className="text-xl font-semibold text-gospel-navy mb-4">Call Us</h3>
+                <a 
+                  href="tel:+254757756763"
+                  className="text-gospel-gold hover:text-gospel-navy font-medium text-lg"
+                >
+                  0757756763
+                </a>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Booking Form for non-authenticated users */}
+          {!user && (
+            <div id="booking-form" className="max-w-2xl mx-auto">
+              <Card className="border-none shadow-xl">
+                <CardContent className="p-8">
+                  <h3 className="text-2xl font-bold text-gospel-navy text-center mb-6">Quick Booking Request</h3>
+                  <p className="text-center text-gray-600 mb-6">
+                    Join our ministry to access the full booking form and community features
+                  </p>
+                  <div className="text-center">
+                    <Link to="/auth">
+                      <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3">
+                        Join Now to Book
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </section>
     </div>
