@@ -1,15 +1,63 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Phone, Mail, MapPin, MessageCircle, Clock, Heart } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Contact = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          firstName,
+          lastName,
+          email,
+          phone,
+          subject,
+          message
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message Sent",
+        description: "Thank you for your message! We'll get back to you soon.",
+      });
+
+      // Reset form
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPhone('');
+      setSubject('');
+      setMessage('');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -96,7 +144,7 @@ const Contact = () => {
           {/* Contact Form and Info */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
-            <Card className="border-none shadow-xl">
+            <Card className="border-none shadow-xl" id="contact-form">
               <CardHeader>
                 <CardTitle className="text-3xl text-gospel-navy text-center">Send Us a Message</CardTitle>
                 <p className="text-gray-600 text-center">
@@ -112,6 +160,9 @@ const Contact = () => {
                       </Label>
                       <Input
                         id="firstName"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
                         className="mt-2 border-gray-300 focus:border-gospel-gold focus:ring-gospel-gold"
                         placeholder="Your first name"
                       />
@@ -122,6 +173,9 @@ const Contact = () => {
                       </Label>
                       <Input
                         id="lastName"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
                         className="mt-2 border-gray-300 focus:border-gospel-gold focus:ring-gospel-gold"
                         placeholder="Your last name"
                       />
@@ -135,6 +189,9 @@ const Contact = () => {
                     <Input
                       id="email"
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                       className="mt-2 border-gray-300 focus:border-gospel-gold focus:ring-gospel-gold"
                       placeholder="your.email@example.com"
                     />
@@ -146,6 +203,8 @@ const Contact = () => {
                     </Label>
                     <Input
                       id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       className="mt-2 border-gray-300 focus:border-gospel-gold focus:ring-gospel-gold"
                       placeholder="Your phone number"
                     />
@@ -157,6 +216,9 @@ const Contact = () => {
                     </Label>
                     <Input
                       id="subject"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      required
                       className="mt-2 border-gray-300 focus:border-gospel-gold focus:ring-gospel-gold"
                       placeholder="What's this about?"
                     />
@@ -169,6 +231,9 @@ const Contact = () => {
                     <Textarea
                       id="message"
                       rows={6}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      required
                       className="mt-2 border-gray-300 focus:border-gospel-gold focus:ring-gospel-gold"
                       placeholder="Tell us how we can help you..."
                     />
@@ -176,9 +241,10 @@ const Contact = () => {
 
                   <Button 
                     type="submit" 
+                    disabled={loading}
                     className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white font-semibold py-3 text-lg"
                   >
-                    Send Message
+                    {loading ? 'Sending...' : 'Send Message'}
                   </Button>
                 </form>
               </CardContent>

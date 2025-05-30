@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, ArrowLeft, Music } from 'lucide-react';
 
 const BookBand = () => {
@@ -24,6 +24,20 @@ const BookBand = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const locationState = useLocation();
+
+  useEffect(() => {
+    // Pre-fill the user's email if available
+    if (user?.email) {
+      setEmail(user.email);
+    }
+
+    // Check if a service type was passed from Services page
+    const state = locationState.state as { serviceType?: string };
+    if (state?.serviceType) {
+      setEventType(state.serviceType);
+    }
+  }, [user, locationState]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +54,7 @@ const BookBand = () => {
           email,
           phone_number: phoneNumber,
           event_type: eventType,
-          preferred_date: preferredDate,
+          preferred_date: preferredDate || null,
           location,
           message
         });

@@ -3,36 +3,62 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Music, Users, Heart, MapPin, Clock, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Services = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleBookService = (serviceType: string) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    // Navigate to booking page with service type pre-selected
+    navigate('/book-band', { state: { serviceType } });
+  };
+
+  const handleBookNow = () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    navigate('/book-band');
+  };
+
   const services = [
     {
       icon: Music,
       title: 'Live Worship Performances',
       description: 'Professional worship leading for church services, conferences, and special events.',
       features: ['Full band setup', 'Sound system included', 'Repertoire of 100+ songs', '2-4 hour performances'],
-      color: 'bg-blue-500'
+      color: 'bg-blue-500',
+      serviceType: 'worship-service'
     },
     {
       icon: Heart,
       title: 'Wedding & Special Events',
       description: 'Beautiful worship music for weddings, anniversaries, and other special celebrations.',
       features: ['Customized song selection', 'Ceremony & reception music', 'Professional presentation', 'Flexible packages'],
-      color: 'bg-pink-500'
+      color: 'bg-pink-500',
+      serviceType: 'wedding'
     },
     {
       icon: Users,
       title: 'Community Outreach',
       description: 'Evangelistic music ministry reaching communities with the Gospel message.',
       features: ['Street evangelism', 'Hospital visits', 'Prison ministry', 'Community gatherings'],
-      color: 'bg-green-500'
+      color: 'bg-green-500',
+      serviceType: 'outreach'
     },
     {
       icon: Star,
       title: 'Youth Mentorship',
       description: 'Mentoring young musicians and believers in both music and spiritual growth.',
       features: ['Music lessons', 'Spiritual mentorship', 'Performance opportunities', 'Character development'],
-      color: 'bg-purple-500'
+      color: 'bg-purple-500',
+      serviceType: 'other'
     }
   ];
 
@@ -74,7 +100,10 @@ const Services = () => {
                       </div>
                     ))}
                   </div>
-                  <Button className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white">
+                  <Button 
+                    className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white"
+                    onClick={() => handleBookService(service.serviceType)}
+                  >
                     Book This Service
                   </Button>
                 </CardContent>
@@ -165,11 +194,20 @@ const Services = () => {
             Let us help make your next event a truly worshipful and memorable experience.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg">
+            <Button 
+              size="lg" 
+              className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg"
+              onClick={handleBookNow}
+            >
               <Clock className="mr-2 h-5 w-5" />
               Book Now
             </Button>
-            <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-2 border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg"
+              onClick={() => navigate('/contact')}
+            >
               <MapPin className="mr-2 h-5 w-5" />
               Get Quote
             </Button>
