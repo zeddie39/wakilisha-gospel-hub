@@ -115,7 +115,7 @@ const PrayerRequest = () => {
                 <Checkbox
                   id="anonymous"
                   checked={isAnonymous}
-                  onCheckedChange={setIsAnonymous}
+                  onCheckedChange={(checked) => setIsAnonymous(checked === true)}
                   className="border-gospel-gold text-gospel-gold focus:ring-gospel-gold"
                 />
                 <Label htmlFor="anonymous" className="text-gospel-navy">
