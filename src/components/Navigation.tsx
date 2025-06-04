@@ -5,6 +5,7 @@ import { Menu, X, Music, User, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +30,11 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
     setIsOpen(false);
-    navigate('/'); // Redirect to landing page after sign out
+    navigate('/');
+  };
+
+  const handleNavClick = () => {
+    setIsOpen(false);
   };
 
   return (
@@ -101,75 +106,91 @@ const Navigation = () => {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gospel-navy hover:text-gospel-gold p-2"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-gospel-navy hover:text-gospel-gold">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <div className="flex flex-col h-full">
+                  {/* Logo */}
+                  <div className="flex items-center space-x-2 pb-6 border-b">
+                    <div className="bg-gospel-gold p-2 rounded-full">
+                      <Music className="h-5 w-5 text-white" />
+                    </div>
+                    <span className="text-lg font-bold text-gospel-navy">Wakilisha Gospel</span>
+                  </div>
+
+                  {/* Navigation Items */}
+                  <div className="flex-1 py-6">
+                    <div className="space-y-1">
+                      {navItems.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.path}
+                          onClick={handleNavClick}
+                          className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors duration-200 ${
+                            isActive(item.path)
+                              ? 'text-gospel-gold bg-gospel-cream'
+                              : 'text-gospel-navy hover:text-gospel-gold hover:bg-gospel-cream'
+                          }`}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Auth Section */}
+                  <div className="border-t pt-6">
+                    {user ? (
+                      <div className="space-y-3">
+                        <Link
+                          to="/dashboard"
+                          onClick={handleNavClick}
+                          className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-gospel-navy hover:text-gospel-gold hover:bg-gospel-cream transition-colors"
+                        >
+                          <User className="h-5 w-5 mr-3" />
+                          Dashboard
+                        </Link>
+                        
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            onClick={handleNavClick}
+                            className="flex items-center px-4 py-3 rounded-lg text-base font-medium text-purple-500 hover:bg-purple-50 transition-colors"
+                          >
+                            <Shield className="h-5 w-5 mr-3" />
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center w-full px-4 py-3 rounded-lg text-base font-medium text-red-500 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut className="h-5 w-5 mr-3" />
+                          Sign Out
+                        </button>
+                      </div>
+                    ) : (
+                      <Link
+                        to="/auth"
+                        onClick={handleNavClick}
+                        className="block w-full"
+                      >
+                        <Button className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white">
+                          Join Our Ministry
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                    isActive(item.path)
-                      ? 'text-gospel-gold bg-gospel-cream'
-                      : 'text-gospel-navy hover:text-gospel-gold hover:bg-gospel-cream'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              
-              {/* Mobile Auth */}
-              {user ? (
-                <div className="space-y-2 pt-2">
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 rounded-md text-base font-medium text-gospel-navy hover:text-gospel-gold hover:bg-gospel-cream"
-                  >
-                    Dashboard
-                  </Link>
-                  
-                  {/* Mobile Admin Link */}
-                  {isAdmin && (
-                    <Link
-                      to="/admin"
-                      onClick={() => setIsOpen(false)}
-                      className="block px-3 py-2 rounded-md text-base font-medium text-purple-500 hover:bg-purple-50"
-                    >
-                      Admin Dashboard
-                    </Link>
-                  )}
-                  
-                  <button
-                    onClick={handleSignOut}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-red-50"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  to="/auth"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-gospel-gold text-white hover:bg-gospel-light-gold"
-                >
-                  Join Our Ministry
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );
