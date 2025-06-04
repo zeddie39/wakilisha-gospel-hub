@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Clock, Users, ExternalLink } from 'lucide-react';
+import RSVPForm from '@/components/RSVPForm';
 
 const Events = () => {
   const upcomingEvents = [
@@ -113,52 +113,62 @@ const Events = () => {
             <p className="text-xl text-gray-600">Don't miss these opportunities to worship with us!</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {upcomingEvents.map((event, index) => (
-              <Card key={event.id} className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className={`${getEventTypeColor(event.type)} px-3 py-1 rounded-full text-white text-sm font-medium capitalize`}>
-                      {event.type}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
+              {upcomingEvents.map((event, index) => (
+                <Card key={event.id} className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className={`${getEventTypeColor(event.type)} px-3 py-1 rounded-full text-white text-sm font-medium capitalize`}>
+                        {event.type}
+                      </div>
+                      {event.recurring && (
+                        <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          {event.recurring}
+                        </span>
+                      )}
                     </div>
-                    {event.recurring && (
-                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {event.recurring}
-                      </span>
-                    )}
-                  </div>
-                  <CardTitle className="text-2xl text-gospel-navy">{event.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center text-gray-600">
-                      <Calendar className="h-5 w-5 mr-3 text-gospel-gold" />
-                      <span>{formatDate(event.date)}</span>
+                    <CardTitle className="text-2xl text-gospel-navy">{event.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center text-gray-600">
+                        <Calendar className="h-5 w-5 mr-3 text-gospel-gold" />
+                        <span>{formatDate(event.date)}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <Clock className="h-5 w-5 mr-3 text-gospel-gold" />
+                        <span>{event.time}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <MapPin className="h-5 w-5 mr-3 text-gospel-gold" />
+                        <span>{event.location}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center text-gray-600">
-                      <Clock className="h-5 w-5 mr-3 text-gospel-gold" />
-                      <span>{event.time}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <MapPin className="h-5 w-5 mr-3 text-gospel-gold" />
-                      <span>{event.location}</span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-6 leading-relaxed">{event.description}</p>
-                  
-                  <div className="flex gap-3">
-                    <Button className="flex-1 bg-gospel-gold hover:bg-gospel-light-gold text-white">
-                      <Users className="mr-2 h-4 w-4" />
-                      RSVP
-                    </Button>
-                    <Button variant="outline" className="border-gospel-gold text-gospel-gold hover:bg-gospel-gold hover:text-white">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    
+                    <p className="text-gray-600 mb-6 leading-relaxed">{event.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="space-y-8">
+              <div className="bg-gospel-cream p-6 rounded-lg">
+                <h3 className="text-2xl font-bold text-gospel-navy mb-4">RSVP for Events</h3>
+                <p className="text-gray-600 mb-6">Reserve your spot for our upcoming events!</p>
+              </div>
+              
+              {upcomingEvents.slice(0, 2).map((event) => (
+                <RSVPForm
+                  key={event.id}
+                  eventId={event.id.toString()}
+                  eventTitle={event.title}
+                  eventDate={formatDate(event.date)}
+                  eventTime={event.time}
+                  eventLocation={event.location}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -193,26 +203,6 @@ const Events = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Event Calendar Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gospel-navy mb-6">Full Event Calendar</h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Stay updated with all our events and never miss a worship opportunity.
-          </p>
-          <div className="bg-gray-100 rounded-lg p-12">
-            <Calendar className="h-24 w-24 text-gospel-gold mx-auto mb-6" />
-            <p className="text-gray-600 mb-6">
-              Our full interactive calendar will be available soon. For now, follow our social media 
-              or contact us directly for the most up-to-date event information.
-            </p>
-            <Button className="bg-gospel-gold hover:bg-gospel-light-gold text-white">
-              Contact for Events
-            </Button>
           </div>
         </div>
       </section>

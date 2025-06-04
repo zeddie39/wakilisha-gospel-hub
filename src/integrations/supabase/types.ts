@@ -150,6 +150,72 @@ export type Database = {
         }
         Relationships: []
       }
+      rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_title: string
+          id: string
+          status: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_title: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_title?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          order_index: number | null
+          position: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          order_index?: number | null
+          position: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          order_index?: number | null
+          position?: string
+        }
+        Relationships: []
+      }
       User: {
         Row: {
           createdAt: string

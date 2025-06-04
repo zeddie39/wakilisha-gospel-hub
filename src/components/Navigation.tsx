@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Music, User, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
 
@@ -28,6 +29,7 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
     setIsOpen(false);
+    navigate('/'); // Redirect to landing page after sign out
   };
 
   return (

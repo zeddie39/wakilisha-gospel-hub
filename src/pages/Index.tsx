@@ -1,9 +1,10 @@
 
 import Hero from '../components/Hero';
 import MissionSection from '../components/MissionSection';
+import TeamMembers from '../components/TeamMembers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Music, Heart, Users, Calendar, Phone, Mail, MessageCircle } from 'lucide-react';
+import { Music, Heart, Users, Calendar, Phone, Mail, MessageCircle, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -115,11 +116,11 @@ const Index = () => {
                 View All Services
               </Button>
             </Link>
-            <a href="#booking-form">
+            <Link to="/book-band">
               <Button size="lg" variant="outline" className="border-gospel-gold text-gospel-navy hover:bg-gospel-gold hover:text-white px-8 py-3">
                 Book Now
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -134,26 +135,31 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Video Player Placeholder */}
           <div className="max-w-4xl mx-auto">
-            <div className="relative bg-gray-200 rounded-lg overflow-hidden shadow-lg aspect-video">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="bg-white p-4 rounded-full mb-4 mx-auto w-fit">
-                    <Music className="h-12 w-12 text-gospel-gold" />
-                  </div>
-                  <p className="text-gray-600 text-lg">
-                    Worship video will be embedded here
-                  </p>
-                  <p className="text-gray-500 text-sm mt-2">
-                    YouTube iframe or direct video player
-                  </p>
-                </div>
-              </div>
+            <div className="relative bg-gray-900 rounded-lg overflow-hidden shadow-lg aspect-video">
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src="https://www.youtube.com/embed/jH1RNk8954Q"
+                title="Wakilisha Gospel Band Worship Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+            <div className="text-center mt-6">
+              <Link to="/gallery">
+                <Button size="lg" variant="outline" className="border-gospel-gold text-gospel-gold hover:bg-gospel-gold hover:text-white">
+                  <Play className="mr-2 h-4 w-4" />
+                  View More Videos
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Team Members Section */}
+      <TeamMembers />
 
       {/* Call to Action */}
       <section className="py-16 bg-gospel-navy text-white">
@@ -249,26 +255,14 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* Booking Form for non-authenticated users */}
-          {!user && (
-            <div id="booking-form" className="max-w-2xl mx-auto">
-              <Card className="border-none shadow-xl">
-                <CardContent className="p-8">
-                  <h3 className="text-2xl font-bold text-gospel-navy text-center mb-6">Quick Booking Request</h3>
-                  <p className="text-center text-gray-600 mb-6">
-                    Join our ministry to access the full booking form and community features
-                  </p>
-                  <div className="text-center">
-                    <Link to="/auth">
-                      <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3">
-                        Join Now to Book
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          {/* Contact form moved to Contact page */}
+          <div className="text-center">
+            <Link to="/contact">
+              <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3">
+                Send Us a Message
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>
