@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               .insert({
                 id: session.user.id,
                 full_name: session.user.user_metadata?.full_name || '',
+                role: 'user' // Default role
               });
 
             if (error) {
@@ -102,11 +103,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     if (error) {
       console.error('Sign up error:', error);
-      toast({
-        title: "Sign Up Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      
+      // Handle specific error cases
+      if (error.message?.includes('User already registered')) {
+        toast({
+          title: "Account Already Exists",
+          description: "This email is already registered. Please try signing in instead.",
+          variant: "destructive"
+        });
+      } else if (error.message?.includes('email rate limit')) {
+        toast({
+          title: "Too Many Requests",
+          description: "Please wait a moment before trying again.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Sign Up Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     } else {
       toast({
         title: "Welcome!",
@@ -129,11 +146,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     if (error) {
       console.error('Sign in error:', error);
-      toast({
-        title: "Sign In Error",
-        description: error.message,
-        variant: "destructive"
-      });
+      
+      // Handle specific error cases
+      if (error.message?.includes('Invalid login credentials')) {
+        toast({
+          title: "Invalid Credentials",
+          description: "Please check your email and password and try again.",
+          variant: "destructive"
+        });
+      } else if (error.message?.includes('Email not confirmed')) {
+        toast({
+          title: "Email Not Verified",
+          description: "Please check your email and click the verification link.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Sign In Error",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     } else {
       toast({
         title: "Welcome back!",

@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Music, User, LogOut } from 'lucide-react';
+import { Menu, X, Music, User, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const navItems = [
     { name: 'Home', path: '/' },
@@ -66,6 +68,17 @@ const Navigation = () => {
                     Dashboard
                   </Button>
                 </Link>
+                
+                {/* Admin Button */}
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="outline" className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                
                 <Button 
                   onClick={handleSignOut}
                   variant="outline" 
@@ -124,6 +137,18 @@ const Navigation = () => {
                   >
                     Dashboard
                   </Link>
+                  
+                  {/* Mobile Admin Link */}
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsOpen(false)}
+                      className="block px-3 py-2 rounded-md text-base font-medium text-purple-500 hover:bg-purple-50"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  
                   <button
                     onClick={handleSignOut}
                     className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-red-50"
