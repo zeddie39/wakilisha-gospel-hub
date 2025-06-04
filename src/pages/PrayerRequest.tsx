@@ -23,7 +23,23 @@ const PrayerRequest = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to submit a prayer request.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!title || !description) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide both title and description.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setLoading(true);
     
@@ -40,14 +56,22 @@ const PrayerRequest = () => {
       if (error) throw error;
 
       toast({
-        title: "Prayer Request Submitted",
+        title: "Prayer Request Submitted 🙏",
         description: "Your prayer request has been received. Our community will pray for you.",
       });
 
-      navigate('/dashboard');
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setIsAnonymous(false);
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     } catch (error: any) {
+      console.error('Prayer request error:', error);
       toast({
-        title: "Error",
+        title: "Submission Failed",
         description: error.message,
         variant: "destructive"
       });
