@@ -61,30 +61,7 @@ const MediaUpload = () => {
         return null;
       }
       
-      // Track upload progress manually
-      const uploadProgressHandler = (event: ProgressEvent) => {
-        setUploadProgress(Math.round((event.loaded / event.total) * 100));
-      };
-      
-      // Create a FormData object to handle the file upload
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      // Upload the file using fetch to track progress
-      const response = await fetch(
-        `${supabase.storage.url}/object/media_uploads/${filePath}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${supabase.auth.session()?.access_token}`,
-          },
-          body: formData,
-        }
-      );
-      
-      if (!response.ok) throw new Error('Upload failed');
-      
-      // Upload file without progress tracking using Supabase client
+      // Simple upload with no progress tracking (since the onUploadProgress option isn't supported)
       const { data, error } = await supabase.storage
         .from('media_uploads')
         .upload(filePath, file, {
