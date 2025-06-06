@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,15 +64,12 @@ const AdminMediaForm = ({ onMediaAdded }: AdminMediaFormProps) => {
         return null;
       }
       
-      // Upload file
+      // Upload file without progress tracking
       const { data, error } = await supabase.storage
         .from('media_uploads')
         .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
-          onUploadProgress: (progress) => {
-            setUploadProgress(Math.round((progress.loaded / progress.total) * 100));
-          }
+          upsert: false
         });
         
       if (error) throw error;
