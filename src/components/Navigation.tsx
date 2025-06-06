@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Music, User, LogOut, Shield } from 'lucide-react';
@@ -30,7 +29,7 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
     setIsOpen(false);
-    navigate('/');
+    navigate('/'); // This ensures redirect to landing page
   };
 
   const handleNavClick = () => {

@@ -1,4 +1,3 @@
-
 import Hero from '../components/Hero';
 import MissionSection from '../components/MissionSection';
 import TeamMembers from '../components/TeamMembers';
@@ -17,6 +16,10 @@ const Index = () => {
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const openGmail = () => {
+    window.open('https://mail.google.com/mail/?view=cm&fs=1&to=wakilishagospelband@gmail.com', '_blank');
   };
 
   return (
@@ -230,12 +233,12 @@ const Index = () => {
                   <Mail className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-gospel-navy mb-4">Email</h3>
-                <a 
-                  href="mailto:wakilishagospelband@gmail.com"
-                  className="text-gospel-gold hover:text-gospel-navy font-medium text-lg"
+                <button 
+                  onClick={openGmail}
+                  className="text-gospel-gold hover:text-gospel-navy font-medium text-lg cursor-pointer"
                 >
                   wakilishagospelband@gmail.com
-                </a>
+                </button>
               </CardContent>
             </Card>
 

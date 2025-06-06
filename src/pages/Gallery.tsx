@@ -1,80 +1,66 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Image, Calendar, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+
+interface MediaItem {
+  id: string;
+  title: string;
+  description: string;
+  file_url: string;
+  file_type: string;
+  created_at: string;
+}
 
 const Gallery = () => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
-  const mediaItems = [
-    {
-      id: 1,
-      type: 'image',
-      category: 'worship',
-      title: 'Sunday Worship Service',
-      date: '2024-05-15',
-      thumbnail: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: 'Leading worship at Grace Church'
-    },
-    {
-      id: 2,
-      type: 'image',
-      category: 'concert',
-      title: 'City Square Concert',
-      date: '2024-04-20',
-      thumbnail: 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: 'Community gospel concert under the stars'
-    },
-    {
-      id: 3,
-      type: 'video',
-      category: 'worship',
-      title: 'Praise & Worship Medley',
-      date: '2024-05-01',
-      thumbnail: 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: 'Beautiful worship medley from our latest service'
-    },
-    {
-      id: 4,
-      type: 'image',
-      category: 'outreach',
-      title: 'Kibera Outreach',
-      date: '2024-04-10',
-      thumbnail: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: 'Spreading hope through music in Kibera'
-    },
-    {
-      id: 5,
-      type: 'video',
-      category: 'concert',
-      title: 'Easter Celebration Highlights',
-      date: '2024-03-31',
-      thumbnail: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: 'Highlights from our Easter celebration concert'
-    },
-    {
-      id: 6,
-      type: 'image',
-      category: 'band',
-      title: 'Band Practice Session',
-      date: '2024-05-08',
-      thumbnail: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      description: 'Our dedicated members during practice'
+  // Fetch approved media from database
+  useEffect(() => {
+    fetchApprovedMedia();
+  }, []);
+
+  const fetchApprovedMedia = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('media_submissions')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMediaItems(data || []);
+    } catch (error) {
+      console.error('Error fetching media:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load gallery media",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const filters = [
     { key: 'all', label: 'All Media', icon: Image },
-    { key: 'worship', label: 'Worship', icon: Users },
-    { key: 'concert', label: 'Concerts', icon: Play },
-    { key: 'outreach', label: 'Outreach', icon: Calendar },
-    { key: 'band', label: 'Band Life', icon: Users }
+    { key: 'image', label: 'Images', icon: Image },
+    { key: 'video', label: 'Videos', icon: Play },
+    { key: 'audio', label: 'Audio', icon: Users }
   ];
 
   const filteredItems = activeFilter === 'all' 
     ? mediaItems 
-    : mediaItems.filter(item => item.category === activeFilter);
+    : mediaItems.filter(item => item.file_type === activeFilter);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -84,6 +70,14 @@ const Gallery = () => {
       day: 'numeric' 
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gospel-navy">Loading gallery...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -127,93 +121,67 @@ const Gallery = () => {
       {/* Gallery Grid */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((item, index) => (
-              <Card 
-                key={item.id} 
-                className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in overflow-hidden group cursor-pointer"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={item.thumbnail} 
-                    alt={item.title}
-                    className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
-                  />
-                  
-                  {/* Video Overlay */}
-                  {item.type === 'video' && (
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-white/90 p-3 rounded-full">
-                        <Play className="h-8 w-8 text-gospel-navy" />
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-12">
+              <Image className="h-24 w-24 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No media found</h3>
+              <p className="text-gray-500">Check back later for new uploads!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredItems.map((item, index) => (
+                <Card 
+                  key={item.id} 
+                  className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fade-in overflow-hidden group cursor-pointer"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="relative overflow-hidden">
+                    {item.file_type === 'video' && item.file_url.includes('youtube') ? (
+                      <iframe
+                        src={item.file_url.replace('watch?v=', 'embed/')}
+                        className="w-full h-64"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : item.file_type === 'image' ? (
+                      <img 
+                        src={item.file_url} 
+                        alt={item.title}
+                        className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
+                        <Play className="h-16 w-16 text-gray-400" />
                       </div>
+                    )}
+
+                    {/* Type Badge */}
+                    <div className="absolute top-4 left-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.file_type === 'video' 
+                          ? 'bg-red-500 text-white' 
+                          : item.file_type === 'image'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-green-500 text-white'
+                      }`}>
+                        {item.file_type}
+                      </span>
                     </div>
-                  )}
-
-                  {/* Type Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      item.type === 'video' 
-                        ? 'bg-red-500 text-white' 
-                        : 'bg-blue-500 text-white'
-                    }`}>
-                      {item.type === 'video' ? 'Video' : 'Photo'}
-                    </span>
                   </div>
 
-                  {/* Category Badge */}
-                  <div className="absolute top-4 right-4">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-gospel-gold text-white capitalize">
-                      {item.category}
-                    </span>
-                  </div>
-                </div>
-
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold text-gospel-navy mb-2">{item.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3">{item.description}</p>
-                  <div className="flex items-center text-gray-500 text-xs">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>{formatDate(item.date)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Load More Button */}
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3"
-            >
-              Load More Media
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-gospel-gold mb-2">200+</div>
-              <div className="text-gray-600 font-medium">Photos Captured</div>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-semibold text-gospel-navy mb-2">{item.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+                    <div className="flex items-center text-gray-500 text-xs">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      <span>{formatDate(item.created_at)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-            <div>
-              <div className="text-4xl font-bold text-gospel-gold mb-2">50+</div>
-              <div className="text-gray-600 font-medium">Video Recordings</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-gospel-gold mb-2">25+</div>
-              <div className="text-gray-600 font-medium">Events Documented</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-gospel-gold mb-2">5+</div>
-              <div className="text-gray-600 font-medium">Years of Memories</div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -224,10 +192,21 @@ const Gallery = () => {
           <p className="text-xl text-gray-200 mb-8">
             Have photos or videos from our events? We'd love to feature them in our gallery!
           </p>
-          <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg">
-            <Image className="mr-2 h-5 w-5" />
-            Submit Media
-          </Button>
+          {user ? (
+            <Link to="/dashboard">
+              <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg">
+                <Image className="mr-2 h-5 w-5" />
+                Submit Media
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/auth">
+              <Button size="lg" className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg">
+                <Image className="mr-2 h-5 w-5" />
+                Join to Submit Media
+              </Button>
+            </Link>
+          )}
         </div>
       </section>
     </div>
