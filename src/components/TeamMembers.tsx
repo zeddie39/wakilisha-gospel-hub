@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -6,33 +5,88 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, Star, Music, Crown, Heart } from 'lucide-react';
 
 const TeamMembers = () => {
-  const { data: teamMembers, isLoading } = useQuery({
+  // Debug: log the supabase client
+  console.log('Supabase client:', supabase);
+
+  const { data: teamMembers, isLoading, error } = useQuery({
     queryKey: ['team-members'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('team_members')
-        .select('*')
-        .order('order_index');
-      
-      if (error) throw error;
+      console.log('TeamMembers queryFn called');
+      // Direct fetch to Supabase REST API
+      const url = 'https://lefdftauoubelcfcrala.supabase.co/rest/v1/team_members?select=*&order=order_index';
+      const res = await fetch(url, {
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+        },
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
+      const data = await res.json();
+      console.log('Direct fetch data:', data);
       return data;
     }
   });
 
+  // Debug log
+  console.log('teamMembers', teamMembers, 'isLoading', isLoading, 'error', error);
+
   const getIcon = (position: string) => {
-    if (position.includes('CEO') || position.includes('Founder')) return <Crown className="h-6 w-6 text-gospel-gold" />;
-    if (position.includes('Director')) return <Music className="h-6 w-6 text-gospel-gold" />;
-    if (position.includes('Chair')) return <Star className="h-6 w-6 text-gospel-gold" />;
-    if (position.includes('Patron')) return <Crown className="h-6 w-6 text-gospel-gold" />;
-    return <Heart className="h-6 w-6 text-gospel-gold" />;
+    if (position.includes('CEO') || position.includes('Founder')) return <Crown className="h-6 w-6 text-gospel-gold" aria-label="CEO or Founder" />;
+    if (position.includes('Director')) return <Music className="h-6 w-6 text-gospel-gold" aria-label="Director" />;
+    if (position.includes('Chair')) return <Star className="h-6 w-6 text-gospel-gold" aria-label="Chair" />;
+    if (position.includes('Patron')) return <Crown className="h-6 w-6 text-gospel-gold" aria-label="Patron" />;
+    return <Heart className="h-6 w-6 text-gospel-gold" aria-label="Team Member" />;
   };
+
+  // Hardcoded image map for local images
+  const imageMap: Record<string, string> = {
+    "John Doe": "/team/john.jpg",
+    "Jane Smith": "/team/jane.jpg",
+    // Add more mappings: "Name": "/team/filename.jpg"
+  };
+
+  const renderImage = (member: { name: string; image_url?: string }) => {
+    const imageSrc = member.image_url || imageMap[member.name];
+    if (imageSrc) {
+      return (
+        <img
+          src={imageSrc}
+          alt={`Photo of ${member.name}`}
+          className="h-24 w-24 object-cover rounded-full border-4 border-gospel-gold mb-2"
+        />
+      );
+    }
+    return (
+      <div
+        className="h-24 w-24 flex items-center justify-center rounded-full bg-gray-200 border-4 border-gospel-gold mb-2"
+        aria-label="Placeholder for team member photo"
+      >
+        <Users className="h-12 w-12 text-gospel-gold" />
+      </div>
+    );
+  };
+
+  if (error) {
+    return (
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-red-600" role="alert">Error loading team members: {error.message}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (isLoading) {
     return (
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="text-gray-600">Loading team members...</p>
+            <p className="text-gray-600" role="status">Loading team members...</p>
           </div>
         </div>
       </section>
@@ -50,10 +104,14 @@ const TeamMembers = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {teamMembers?.map((member, index) => (
-            <Card key={member.id} className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+          {teamMembers?.map((member) => (
+            <Card
+              key={member.id}
+              className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+            >
               <CardContent className="p-8 text-center">
-                <div className="bg-gospel-cream p-4 rounded-full w-fit mx-auto mb-6">
+                <div className="bg-gospel-cream p-4 rounded-full w-fit mx-auto mb-6 flex flex-col items-center">
+                  {renderImage(member)}
                   {getIcon(member.position)}
                 </div>
                 <h3 className="text-xl font-semibold text-gospel-navy mb-2">{member.name}</h3>

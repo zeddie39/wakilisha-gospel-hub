@@ -129,7 +129,7 @@ const Index = () => {
       </section>
 
       {/* Watch Us Worship Section */}
-      <section className="py-16 bg-white">
+      <section id="watch-us-worship" className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gospel-navy mb-6">Watch Us Worship</h2>
@@ -142,7 +142,7 @@ const Index = () => {
             <div className="relative bg-gray-900 rounded-lg overflow-hidden shadow-lg aspect-video">
               <iframe
                 className="absolute inset-0 w-full h-full"
-                src="https://www.youtube.com/embed/jH1RNk8954Q"
+                src="https://www.youtube.com/embed/7cWfm6RdieA"
                 title="Wakilisha Gospel Band Worship Video"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

@@ -4,28 +4,93 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Upload, FileText, Image, Video, Link as LinkIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useMutation } from '@tanstack/react-query';
 
 const MediaUpload = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [fileUrl, setFileUrl] = useState('');
   const [fileType, setFileType] = useState('video');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadMethod, setUploadMethod] = useState('link');
   const [file, setFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+  const mediaUpload = useMutation({
+    mutationFn: async (formData: FormData) => {
+      // First upload to Supabase Storage via REST API
+      const uploadUrl = 'https://lefdftauoubelcfcrala.supabase.co/storage/v1/object/media_uploads/' + 
+        user!.id + '/' + Date.now() + '_' + file!.name;
+      
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4'
+        }
+      });
+
+      if (!uploadRes.ok) {
+        const text = await uploadRes.text();
+        throw new Error(`Upload failed: ${text}`);
+      }
+
+      const uploadData = await uploadRes.json();
+      const fileUrl = `https://lefdftauoubelcfcrala.supabase.co/storage/v1/object/public/media_uploads/${uploadData.Key}`;
+
+      // Then create the media submission via REST API
+      const submissionUrl = 'https://lefdftauoubelcfcrala.supabase.co/rest/v1/media_submissions';
+      const submissionRes = await fetch(submissionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          user_id: user!.id,
+          title,
+          description,
+          file_url: fileUrl,
+          file_type: fileType,
+          status: 'pending'
+        })
+      });
+
+      if (!submissionRes.ok) {
+        const text = await submissionRes.text();
+        throw new Error(`Submission failed: ${text}`);
+      }
+
+      return fileUrl;
+    }
+  });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      
+      // Validate file size
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File Too Large",
+          description: "Maximum file size is 5MB",
+          variant: "destructive"
+        });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      
       setFile(selectedFile);
       
       // Auto-detect file type
@@ -35,56 +100,15 @@ const MediaUpload = () => {
         setFileType('video');
       } else if (selectedFile.type.startsWith('audio/')) {
         setFileType('audio');
-      }
-    }
-  };
-
-  const uploadFile = async () => {
-    if (!file) return null;
-    
-    try {
-      // Create a unique file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-      const filePath = `${user!.id}/${fileName}`;
-      
-      // Check if media_uploads bucket exists, if not it will be created via SQL
-      const { data: bucketData } = await supabase.storage.getBucket('media_uploads');
-      
-      if (!bucketData) {
-        // Notify user about missing bucket
+      } else {
         toast({
-          title: "Storage Setup Required",
-          description: "Please contact admin to set up storage for media uploads.",
+          title: "Invalid File Type",
+          description: "Please upload an image, video, or audio file",
           variant: "destructive"
         });
-        return null;
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
       }
-      
-      // Simple upload with no progress tracking (since the onUploadProgress option isn't supported)
-      const { data, error } = await supabase.storage
-        .from('media_uploads')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-        
-      if (error) throw error;
-      
-      // Create a public URL for the uploaded file
-      const { data: publicUrlData } = supabase.storage
-        .from('media_uploads')
-        .getPublicUrl(filePath);
-        
-      return publicUrlData.publicUrl;
-    } catch (error: any) {
-      console.error('Error uploading file:', error);
-      toast({
-        title: "Upload Failed",
-        description: error.message,
-        variant: "destructive"
-      });
-      return null;
     }
   };
 
@@ -111,33 +135,37 @@ const MediaUpload = () => {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      let finalFileUrl = fileUrl;
-      
-      // If upload method is file, upload it first
-      if (uploadMethod === 'file') {
-        const uploadedUrl = await uploadFile();
-        if (!uploadedUrl) {
-          setIsSubmitting(false);
-          return;
-        }
-        finalFileUrl = uploadedUrl;
-      }
-
-      const { error } = await supabase
-        .from('media_submissions')
-        .insert({
-          user_id: user.id,
-          title,
-          description,
-          file_url: finalFileUrl,
-          file_type: fileType,
-          status: 'pending'
+      if (uploadMethod === 'file' && file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        await mediaUpload.mutateAsync(formData);
+      } else {
+        // Handle link submission
+        const submissionUrl = 'https://lefdftauoubelcfcrala.supabase.co/rest/v1/media_submissions';
+        const res = await fetch(submissionUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            user_id: user.id,
+            title,
+            description,
+            file_url: fileUrl,
+            file_type: fileType,
+            status: 'pending'
+          })
         });
 
-      if (error) throw error;
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Submission failed: ${text}`);
+        }
+      }
 
       toast({
         title: "Media Submitted! 🎥",
@@ -152,15 +180,14 @@ const MediaUpload = () => {
       setFile(null);
       setUploadProgress(0);
       if (fileInputRef.current) fileInputRef.current.value = '';
-    } catch (error: any) {
+
+    } catch (error) {
       console.error('Media submission error:', error);
       toast({
         title: "Submission Failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
         variant: "destructive"
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -173,110 +200,111 @@ const MediaUpload = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <Label htmlFor="title">Media Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter media title"
-              required
-            />
-          </div>
+        <Tabs defaultValue="link" onValueChange={(v) => setUploadMethod(v)}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="link" className="flex items-center">
+              <LinkIcon className="mr-2 h-4 w-4" />
+              Media Link
+            </TabsTrigger>
+            <TabsTrigger value="file" className="flex items-center">
+              <FileText className="mr-2 h-4 w-4" />
+              Upload File
+            </TabsTrigger>
+          </TabsList>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="title">Media Title</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter a title for your media"
+                required
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="fileType">Media Type</Label>
-            <select
-              id="fileType"
-              value={fileType}
-              onChange={(e) => setFileType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gospel-gold"
-            >
-              <option value="video">Video</option>
-              <option value="image">Image</option>
-              <option value="audio">Audio</option>
-            </select>
-          </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter a description of your media"
+                className="min-h-[100px]"
+              />
+            </div>
 
-          <Tabs value={uploadMethod} onValueChange={setUploadMethod} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="link" className="flex items-center">
-                <LinkIcon className="h-4 w-4 mr-2" />
-                Provide Link
-              </TabsTrigger>
-              <TabsTrigger value="file" className="flex items-center">
-                <FileText className="h-4 w-4 mr-2" />
-                Upload File
-              </TabsTrigger>
-            </TabsList>
-            
             <TabsContent value="link">
               <div>
-                <Label htmlFor="fileUrl">File URL</Label>
+                <Label htmlFor="fileUrl">Media URL</Label>
                 <Input
                   id="fileUrl"
+                  type="url"
                   value={fileUrl}
                   onChange={(e) => setFileUrl(e.target.value)}
-                  placeholder="Enter YouTube URL, Google Drive link, or direct file URL"
+                  placeholder="Enter YouTube or media URL"
+                  required={uploadMethod === 'link'}
                 />
               </div>
             </TabsContent>
-            
+
             <TabsContent value="file">
               <div>
-                <Label htmlFor="file">Upload File</Label>
-                <div className="mt-2">
-                  <Input
-                    ref={fileInputRef}
-                    id="file"
-                    type="file"
-                    onChange={handleFileChange}
-                    accept="image/*,video/*,audio/*"
-                    className="border border-gray-300 rounded-md"
-                  />
-                </div>
-                {file && (
+                <Label htmlFor="file">Upload File (Max 5MB)</Label>
+                <Input
+                  id="file"
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={handleFileChange}
+                  accept="image/*,video/*,audio/*"
+                  required={uploadMethod === 'file'}
+                />
+                {uploadMethod === 'file' && file && (
                   <div className="mt-2">
-                    <p className="text-sm text-gray-600">
-                      Selected file: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                    <Progress value={uploadProgress} className="h-2" />
+                    <p className="text-sm text-gray-600 mt-1">
+                      {uploadProgress}% uploaded
                     </p>
-                  </div>
-                )}
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div 
-                      className="bg-gospel-gold h-2.5 rounded-full" 
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
                   </div>
                 )}
               </div>
             </TabsContent>
-          </Tabs>
 
-          <div>
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your media submission"
-              rows={3}
-            />
-          </div>
+            <div>
+              <Label htmlFor="fileType">Media Type</Label>
+              <select
+                id="fileType"
+                value={fileType}
+                onChange={(e) => setFileType(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2"
+                required
+              >
+                <option value="video">Video</option>
+                <option value="image">Image</option>
+                <option value="audio">Audio</option>
+              </select>
+            </div>
 
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-            className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white"
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Media'}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={mediaUpload.isPending}
+            >
+              {mediaUpload.isPending ? (
+                <>Uploading...</>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Submit Media
+                </>
+              )}
+            </Button>
+          </form>
+        </Tabs>
       </CardContent>
     </Card>
   );
-};
+}
 
 export default MediaUpload;

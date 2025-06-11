@@ -80,11 +80,11 @@ const AdminMediaForm = ({ onMediaAdded }: AdminMediaFormProps) => {
         .getPublicUrl(filePath);
         
       return publicUrlData.publicUrl;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error uploading file:', error);
       toast({
         title: "Upload Failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
         variant: "destructive"
       });
       return null;
@@ -150,11 +150,11 @@ const AdminMediaForm = ({ onMediaAdded }: AdminMediaFormProps) => {
       if (fileInputRef.current) fileInputRef.current.value = '';
       
       onMediaAdded();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Admin media submission error:', error);
       toast({
         title: "Submission Failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
         variant: "destructive"
       });
     } finally {

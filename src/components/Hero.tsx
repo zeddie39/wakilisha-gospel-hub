@@ -1,9 +1,28 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleJoinClick = () => {
+    navigate('/auth');
+  };
+
+  const handleWatchClick = () => {
+    if (window.location.pathname === '/' || window.location.pathname === '/index') {
+      const section = document.getElementById('watch-us-worship');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.hash = '#watch-us-worship';
+      }
+    } else {
+      navigate('/#watch-us-worship');
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -42,6 +61,7 @@ const Hero = () => {
             <Button 
               size="lg" 
               className="bg-gospel-gold hover:bg-gospel-light-gold text-white px-8 py-3 text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+              onClick={handleJoinClick}
             >
               Join Our Ministry
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -51,6 +71,7 @@ const Hero = () => {
               variant="outline" 
               size="lg"
               className="border-2 border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg font-semibold transition-all duration-300"
+              onClick={handleWatchClick}
             >
               <Play className="mr-2 h-5 w-5" />
               Watch Us Worship

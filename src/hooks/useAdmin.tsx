@@ -1,34 +1,36 @@
-
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useAdmin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      if (!user) {
+      if (!user || !session) {
         setIsAdmin(false);
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+        const url = `https://lefdftauoubelcfcrala.supabase.co/rest/v1/profiles?select=role&id=eq.${user.id}`;
+        const res = await fetch(url, {
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY, // Use Vite env variable
+            'Authorization': `Bearer ${session.access_token}`, // Use dynamic token from session
+            'Accept': 'application/json',
+          }
+        });
 
-        if (error) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(data?.role === 'admin');
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`HTTP ${res.status}: ${errorText}`);
         }
+
+        const data = await res.json();
+        setIsAdmin(data?.role === 'admin');
       } catch (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
@@ -38,7 +40,7 @@ export const useAdmin = () => {
     };
 
     checkAdminStatus();
-  }, [user]);
+  }, [user, session]);
 
   return { isAdmin, loading };
 };

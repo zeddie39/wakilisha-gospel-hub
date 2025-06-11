@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Music, Heart, Users } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -19,7 +19,24 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      // Check if user is admin
+      const checkAdmin = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          if (!error && data?.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+        } catch (e) {
+          navigate('/dashboard');
+        }
+      };
+      checkAdmin();
     }
   }, [user, navigate]);
 
@@ -50,7 +67,7 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-gospel-gold p-3 rounded-full">
-              <Music className="h-8 w-8 text-white" />
+              <img src="/wakilisha-logo.jpeg" alt="Wakilisha Gospel Band Logo" className="h-16 w-16 object-contain rounded-full" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gospel-navy mb-2">Join Our Ministry</h1>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Heart, Mail, Phone, MapPin, Facebook, Instagram, Youtube } from 'lucide-react';
 
@@ -70,6 +69,7 @@ const Footer = () => {
             <Heart className="h-4 w-4 text-red-500" />
             <span>for God's Glory</span>
           </div>
+          <p className="text-xs text-gray-500 mt-2">© 2025 Wakilisha Gospel Band. All rights reserved.</p>
         </div>
       </div>
     </footer>

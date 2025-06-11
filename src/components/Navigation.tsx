@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { toast } from '@/components/ui/use-toast';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,10 +18,6 @@ const Navigation = () => {
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
     { name: 'Services', path: '/services' },
-    ...(user ? [
-      { name: 'Events', path: '/events' },
-      { name: 'Gallery', path: '/gallery' },
-    ] : []),
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -29,7 +26,14 @@ const Navigation = () => {
   const handleSignOut = async () => {
     await signOut();
     setIsOpen(false);
-    navigate('/'); // This ensures redirect to landing page
+    // Use hard redirect to ensure all state is cleared and user is sent to landing page
+    window.location.replace('/');
+  };
+
+  // Handler for the signup button: always go to login/signup page
+  const handleSignupClick = () => {
+    setIsOpen(false);
+    navigate('/auth');
   };
 
   const handleNavClick = () => {
@@ -43,7 +47,7 @@ const Navigation = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <div className="bg-gospel-gold p-2 rounded-full">
-                <Music className="h-6 w-6 text-white" />
+                <img src="/src/wakilisha-logo.jpeg" alt="Wakilisha Gospel Band Logo" className="h-10 w-10 object-contain rounded-full" />
               </div>
               <span className="text-xl font-bold text-gospel-navy">Wakilisha Gospel Band</span>
             </Link>
@@ -64,7 +68,6 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
-            
             {/* Auth Buttons */}
             {user ? (
               <div className="flex items-center space-x-4">
@@ -74,8 +77,6 @@ const Navigation = () => {
                     Dashboard
                   </Button>
                 </Link>
-                
-                {/* Admin Button */}
                 {isAdmin && (
                   <Link to="/admin">
                     <Button variant="outline" className="border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white">
@@ -84,7 +85,6 @@ const Navigation = () => {
                     </Button>
                   </Link>
                 )}
-                
                 <Button 
                   onClick={handleSignOut}
                   variant="outline" 
@@ -93,14 +93,14 @@ const Navigation = () => {
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
-              </div>
-            ) : (
-              <Link to="/auth">
-                <Button className="bg-gospel-gold hover:bg-gospel-light-gold text-white">
+                <Button 
+                  onClick={handleSignupClick}
+                  className="bg-gospel-gold hover:bg-gospel-light-gold text-white"
+                >
                   Join Our Ministry
                 </Button>
-              </Link>
-            )}
+              </div>
+            ) : null}
           </div>
 
           {/* Mobile menu button */}
@@ -153,7 +153,6 @@ const Navigation = () => {
                           <User className="h-5 w-5 mr-3" />
                           Dashboard
                         </Link>
-                        
                         {isAdmin && (
                           <Link
                             to="/admin"
@@ -164,7 +163,6 @@ const Navigation = () => {
                             Admin Dashboard
                           </Link>
                         )}
-                        
                         <button
                           onClick={handleSignOut}
                           className="flex items-center w-full px-4 py-3 rounded-lg text-base font-medium text-red-500 hover:bg-red-50 transition-colors"
@@ -172,18 +170,14 @@ const Navigation = () => {
                           <LogOut className="h-5 w-5 mr-3" />
                           Sign Out
                         </button>
-                      </div>
-                    ) : (
-                      <Link
-                        to="/auth"
-                        onClick={handleNavClick}
-                        className="block w-full"
-                      >
-                        <Button className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white">
+                        <Button 
+                          onClick={handleSignupClick}
+                          className="w-full bg-gospel-gold hover:bg-gospel-light-gold text-white"
+                        >
                           Join Our Ministry
                         </Button>
-                      </Link>
-                    )}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </SheetContent>
