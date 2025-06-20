@@ -56,37 +56,111 @@ export type Database = {
       }
       media_submissions: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string | null
           description: string | null
           file_type: string
           file_url: string
           id: string
+          rejection_reason: string | null
           status: string | null
           title: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
           description?: string | null
           file_type: string
           file_url: string
           id?: string
+          rejection_reason?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
           description?: string | null
           file_type?: string
           file_url?: string
           id?: string
+          rejection_reason?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      message_replies: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          message_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          message_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          message_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_replies_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          recipient_id: string | null
+          sender_id: string
+          subject: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string | null
+          sender_id: string
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string
+          subject?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Eye, Trash2, Check, X, Calendar, User, Users, Shield, Plus, Loader2 } from 'lucide-react';
+import { Eye, Trash2, Check, X, Calendar, User, Users, Shield, Plus, Loader2, MessageSquare, Settings } from 'lucide-react';
 import AdminMediaForm from '@/components/AdminMediaForm';
+import AdminMessages from '@/components/AdminMessages';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Navigate } from 'react-router-dom';
 
@@ -20,6 +22,7 @@ interface MediaSubmission {
   status: string;
   created_at: string;
   user_id: string;
+  rejection_reason?: string;
 }
 
 interface UserProfile {
@@ -30,7 +33,7 @@ interface UserProfile {
   phone_number: string;
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const AdminDashboard = () => {
   const [mediaSubmissions, setMediaSubmissions] = useState<MediaSubmission[]>([]);
@@ -43,67 +46,36 @@ const AdminDashboard = () => {
   const [approvedCount, setApprovedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [userCount, setUserCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const { isAdmin, loading: adminLoading } = useAdmin();
 
-  // Fetch media counts separately for stats dashboard
-  const fetchMediaCounts = useCallback(async () => {
+  // Fetch counts
+  const fetchCounts = useCallback(async () => {
     try {
-      // Get pending count
-      const { count: pendingResult, error: pendingError } = await supabase
-        .from('media_submissions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
+      const [pendingResult, approvedResult, rejectedResult, totalResult, userResult, messageResult] = await Promise.all([
+        supabase.from('media_submissions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('media_submissions').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+        supabase.from('media_submissions').select('*', { count: 'exact', head: true }).eq('status', 'rejected'),
+        supabase.from('media_submissions').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('messages').select('*', { count: 'exact', head: true })
+      ]);
 
-      if (pendingError) throw pendingError;
-      setPendingCount(pendingResult || 0);
-
-      // Get approved count
-      const { count: approvedResult, error: approvedError } = await supabase
-        .from('media_submissions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'approved');
-
-      if (approvedError) throw approvedError;
-      setApprovedCount(approvedResult || 0);
-
-      // Get rejected count
-      const { count: rejectedResult, error: rejectedError } = await supabase
-        .from('media_submissions')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'rejected');
-
-      if (rejectedError) throw rejectedError;
-      setRejectedCount(rejectedResult || 0);
-
-      // Get total count
-      const { count: totalResult, error: totalError } = await supabase
-        .from('media_submissions')
-        .select('*', { count: 'exact', head: true });
-
-      if (totalError) throw totalError;
-      setMediaCount(totalResult || 0);
+      setPendingCount(pendingResult.count || 0);
+      setApprovedCount(approvedResult.count || 0);
+      setRejectedCount(rejectedResult.count || 0);
+      setMediaCount(totalResult.count || 0);
+      setUserCount(userResult.count || 0);
+      setMessageCount(messageResult.count || 0);
     } catch (error) {
-      console.error('Error fetching media counts:', error);
+      console.error('Error fetching counts:', error);
     }
   }, []);
 
-  // Fetch users count separately
-  const fetchUserCount = useCallback(async () => {
-    try {
-      const { count, error } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      if (error) throw error;
-      setUserCount(count || 0);
-    } catch (error) {
-      console.error('Error fetching user count:', error);
-    }
-  }, []);
-
-  // Improved paginated media submissions fetch
   const fetchMediaSubmissions = useCallback(async () => {
     try {
       setLoading(true);
@@ -127,7 +99,6 @@ const AdminDashboard = () => {
     }
   }, [mediaPage, toast]);
 
-  // Improved paginated user profiles fetch
   const fetchUserProfiles = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -148,34 +119,39 @@ const AdminDashboard = () => {
     }
   }, [userPage, toast]);
 
-  // Initial data loading with separate counters
   useEffect(() => {
-    // Fetch counts first (lightweight)
-    fetchMediaCounts();
-    fetchUserCount();
-    
-    // Then fetch the actual data for display
+    fetchCounts();
     fetchMediaSubmissions();
     fetchUserProfiles();
-  }, [fetchMediaCounts, fetchUserCount, fetchMediaSubmissions, fetchUserProfiles]);
+  }, [fetchCounts, fetchMediaSubmissions, fetchUserProfiles]);
 
-  const updateSubmissionStatus = async (id: string, status: string) => {
+  const updateSubmissionStatus = async (id: string, status: string, reason?: string) => {
     try {
+      const updateData: any = { 
+        status, 
+        updated_at: new Date().toISOString(),
+        approved_by: status === 'approved' ? user?.id : null,
+        approved_at: status === 'approved' ? new Date().toISOString() : null
+      };
+
+      if (status === 'rejected' && reason) {
+        updateData.rejection_reason = reason;
+      }
+
       const { error } = await supabase
         .from('media_submissions')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
 
-      // Update local state
       setMediaSubmissions(prev => 
         prev.map(item => 
-          item.id === id ? { ...item, status } : item
+          item.id === id ? { ...item, status, rejection_reason: reason } : item
         )
       );
 
-      // Update counts based on status change
+      // Update counts
       if (status === 'approved') {
         setPendingCount(prev => prev - 1);
         setApprovedCount(prev => prev + 1);
@@ -188,6 +164,9 @@ const AdminDashboard = () => {
         title: "Success",
         description: `Media submission ${status}`,
       });
+
+      setRejectingId(null);
+      setRejectionReason('');
     } catch (error) {
       console.error('Error updating submission:', error);
       toast({
@@ -239,6 +218,7 @@ const AdminDashboard = () => {
       if (error) throw error;
 
       setMediaSubmissions(prev => prev.filter(item => item.id !== id));
+      setMediaCount(prev => prev - 1);
 
       toast({
         title: "Success",
@@ -249,6 +229,34 @@ const AdminDashboard = () => {
       toast({
         title: "Error",
         description: "Failed to delete submission",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      setUserProfiles(prev => prev.filter(profile => profile.id !== userId));
+      setUserCount(prev => prev - 1);
+
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
         variant: "destructive"
       });
     }
@@ -272,7 +280,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Redirect non-admin users
   if (!adminLoading && !isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -293,11 +300,11 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gospel-navy mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage media, users, and community content</p>
+          <p className="text-gray-600">Complete control center for managing content, users, and communications</p>
         </div>
 
-        {/* Stats Cards - Now using cached counts */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -306,9 +313,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-gospel-navy">
-                    {pendingCount}
-                  </p>
+                  <p className="text-2xl font-bold text-gospel-navy">{pendingCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -322,9 +327,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold text-gospel-navy">
-                    {approvedCount}
-                  </p>
+                  <p className="text-2xl font-bold text-gospel-navy">{approvedCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -338,9 +341,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Rejected</p>
-                  <p className="text-2xl font-bold text-gospel-navy">
-                    {rejectedCount}
-                  </p>
+                  <p className="text-2xl font-bold text-gospel-navy">{rejectedCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -353,10 +354,22 @@ const AdminDashboard = () => {
                   <Users className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gospel-navy">
-                    {userCount}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Users</p>
+                  <p className="text-2xl font-bold text-gospel-navy">{userCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <MessageSquare className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Messages</p>
+                  <p className="text-2xl font-bold text-gospel-navy">{messageCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -365,9 +378,10 @@ const AdminDashboard = () => {
 
         {/* Tabbed Interface */}
         <Tabs defaultValue="media" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="media">Media Management</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="add-media">Add Media</TabsTrigger>
           </TabsList>
 
@@ -375,7 +389,7 @@ const AdminDashboard = () => {
           <TabsContent value="media">
             <Card>
               <CardHeader>
-                <CardTitle>Media Submissions</CardTitle>
+                <CardTitle>Media Submissions Management</CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -406,6 +420,14 @@ const AdminDashboard = () => {
                               </div>
                               
                               <p className="text-gray-600 mb-3">{submission.description}</p>
+                              
+                              {submission.status === 'rejected' && submission.rejection_reason && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                                  <p className="text-red-800 text-sm">
+                                    <strong>Rejection Reason:</strong> {submission.rejection_reason}
+                                  </p>
+                                </div>
+                              )}
                               
                               <div className="flex items-center space-x-4 text-sm text-gray-500">
                                 <div className="flex items-center">
@@ -443,7 +465,7 @@ const AdminDashboard = () => {
                                     size="sm"
                                     variant="outline"
                                     className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                                    onClick={() => updateSubmissionStatus(submission.id, 'rejected')}
+                                    onClick={() => setRejectingId(submission.id)}
                                   >
                                     <X className="h-4 w-4 mr-1" />
                                     Reject
@@ -461,6 +483,42 @@ const AdminDashboard = () => {
                               </Button>
                             </div>
                           </div>
+
+                          {/* Rejection Reason Input */}
+                          {rejectingId === submission.id && (
+                            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                              <label className="block text-sm font-medium text-red-800 mb-2">
+                                Rejection Reason:
+                              </label>
+                              <textarea
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                className="w-full p-2 border border-red-300 rounded-md text-sm"
+                                rows={3}
+                                placeholder="Please provide a reason for rejection..."
+                              />
+                              <div className="flex justify-end space-x-2 mt-3">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setRejectingId(null);
+                                    setRejectionReason('');
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="bg-red-500 hover:bg-red-600 text-white"
+                                  onClick={() => updateSubmissionStatus(submission.id, 'rejected', rejectionReason)}
+                                  disabled={!rejectionReason.trim()}
+                                >
+                                  Confirm Rejection
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -556,6 +614,16 @@ const AdminDashboard = () => {
                                   Remove Admin
                                 </Button>
                               )}
+                              {profile.id !== user?.id && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                  onClick={() => deleteUser(profile.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -588,11 +656,16 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
+          {/* Messages Tab */}
+          <TabsContent value="messages">
+            <AdminMessages />
+          </TabsContent>
+
           {/* Add Media Tab */}
           <TabsContent value="add-media">
             <AdminMediaForm onMediaAdded={() => {
               fetchMediaSubmissions();
-              fetchMediaCounts();
+              fetchCounts();
             }} />
           </TabsContent>
         </Tabs>
