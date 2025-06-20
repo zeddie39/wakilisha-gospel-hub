@@ -10,10 +10,10 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <Loader2 className="h-12 w-12 animate-spin text-gospel-gold mb-4" />
-          <div className="text-xl text-gospel-navy">Loading dashboard...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-gospel-gold" />
+          <div className="text-lg text-gospel-navy">Loading dashboard...</div>
         </div>
       </div>
     );

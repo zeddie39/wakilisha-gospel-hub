@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, User, LogOut, Settings } from 'lucide-react';
@@ -8,14 +7,24 @@ import { useAdmin } from '@/hooks/useAdmin';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    if (isSigningOut) return; // Prevent multiple clicks
+    
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   const navItems = [
@@ -91,12 +100,13 @@ const Navigation = () => {
                 )}
                 <Button
                   onClick={handleSignOut}
+                  disabled={isSigningOut}
                   variant="outline"
                   size="sm"
-                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white disabled:opacity-50"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  {isSigningOut ? 'Signing Out...' : 'Sign Out'}
                 </Button>
               </div>
             ) : (
@@ -167,13 +177,17 @@ const Navigation = () => {
                   </Link>
                 )}
                 <Button
-                  onClick={handleSignOut}
+                  onClick={() => {
+                    setIsOpen(false);
+                    handleSignOut();
+                  }}
+                  disabled={isSigningOut}
                   variant="outline"
                   size="sm"
-                  className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  className="w-full border-red-500 text-red-500 hover:bg-red-500 hover:text-white disabled:opacity-50"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  {isSigningOut ? 'Signing Out...' : 'Sign Out'}
                 </Button>
               </div>
             ) : (

@@ -17,7 +17,8 @@ export const useAdmin = () => {
       }
 
       try {
-        // Use Supabase client instead of direct fetch
+        console.log('Checking admin status for user:', user.id);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -28,6 +29,7 @@ export const useAdmin = () => {
           console.error('Error checking admin status:', error);
           setIsAdmin(false);
         } else {
+          console.log('User role:', data?.role);
           setIsAdmin(data?.role === 'admin');
         }
       } catch (error) {
