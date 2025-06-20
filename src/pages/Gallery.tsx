@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Play, Image, Calendar, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MediaItem {
   id: string;
@@ -22,23 +24,21 @@ const Gallery = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Fetch approved media from Supabase REST API
+  // Fetch approved media using Supabase client
   useEffect(() => {
     const fetchApprovedMedia = async () => {
       try {
-        const url =
-          'https://lefdftauoubelcfcrala.supabase.co/rest/v1/media_submissions?select=*&status=eq.approved&order=created_at.desc';
-        const res = await fetch(url, {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
-          },
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`HTTP ${res.status}: ${text}`);
+        const { data, error } = await supabase
+          .from('media_submissions')
+          .select('*')
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
         }
-        const data = await res.json();
+
         setMediaItems(data || []);
       } catch (error) {
         console.error('Error fetching media:', error);

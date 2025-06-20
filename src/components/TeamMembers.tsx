@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -5,27 +6,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, Star, Music, Crown, Heart } from 'lucide-react';
 
 const TeamMembers = () => {
-  // Debug: log the supabase client
   console.log('Supabase client:', supabase);
 
   const { data: teamMembers, isLoading, error } = useQuery({
     queryKey: ['team-members'],
     queryFn: async () => {
       console.log('TeamMembers queryFn called');
-      // Direct fetch to Supabase REST API
-      const url = 'https://lefdftauoubelcfcrala.supabase.co/rest/v1/team_members?select=*&order=order_index';
-      const res = await fetch(url, {
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZmRmdGF1b3ViZWxjZmNyYWxhIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NDg0MjYyMzIsImV4cCI6MjA2NDAwMjIzMn0.GDVCD4jyLoOg1MzUKTVE4AF9oai5KJS-l-7ihWggqU4',
-        },
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`HTTP ${res.status}: ${text}`);
+      
+      // Use Supabase client instead of direct fetch
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('order_index');
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
-      const data = await res.json();
-      console.log('Direct fetch data:', data);
+
+      console.log('Supabase data:', data);
       return data;
     }
   });
