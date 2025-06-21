@@ -47,9 +47,7 @@ const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gospel-gold rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">W</span>
-              </div>
+              <img src="/favicon.ico" alt="Wakilisha Logo" className="w-10 h-10 rounded-full shadow bg-white/80 p-1" />
               <span className="text-xl font-bold text-gospel-navy">
                 Wakilisha Gospel Band
               </span>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -42,8 +41,8 @@ const TeamMembers = () => {
 
   // Hardcoded image map for local images
   const imageMap: Record<string, string> = {
-    "John Doe": "/team/john.jpg",
-    "Jane Smith": "/team/jane.jpg",
+    "Rodgers Makheti": "/rodgers.jpg",
+    "Vincent Zedekiah": "/zeddie.jpg",
     // Add more mappings: "Name": "/team/filename.jpg"
   };
 
@@ -54,16 +53,17 @@ const TeamMembers = () => {
         <img
           src={imageSrc}
           alt={`Photo of ${member.name}`}
-          className="h-24 w-24 object-cover rounded-full border-4 border-gospel-gold mb-2"
+          className="h-56 w-56 object-cover rounded-full border-4 border-gospel-gold mb-2 transition-transform duration-300 hover:scale-[2.5] hover:z-30 shadow-2xl"
+          style={{ objectPosition: "center top" }}
         />
       );
     }
     return (
       <div
-        className="h-24 w-24 flex items-center justify-center rounded-full bg-gray-200 border-4 border-gospel-gold mb-2"
+        className="h-56 w-56 flex items-center justify-center rounded-full bg-gray-200 border-4 border-gospel-gold mb-2 transition-transform duration-300 hover:scale-[2.5] hover:z-30 shadow-2xl"
         aria-label="Placeholder for team member photo"
       >
-        <Users className="h-12 w-12 text-gospel-gold" />
+        <Users className="h-20 w-20 text-gospel-gold" />
       </div>
     );
   };

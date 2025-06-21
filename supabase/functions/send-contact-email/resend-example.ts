@@ -17,14 +17,7 @@ interface ContactEmailRequest {
   message: string;
 }
 
-// Use Deno.env only if available, fallback to environment variable for local testing
-let RESEND_API_KEY: string | undefined;
-if (typeof Deno !== "undefined" && (Deno as any).env) {
-  RESEND_API_KEY = (Deno as any).env.get("RESEND_API_KEY");
-} else {
-  RESEND_API_KEY = (globalThis as any).RESEND_API_KEY || "";
-}
-
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const TO_EMAIL = "wakilishagospelband@gmail.com";
 const FROM_EMAIL = "info@wakilishagospelband.co.ke";
 
@@ -62,32 +55,6 @@ const handler = async (req: Request): Promise<Response> => {
     if (!resendRes.ok) {
       const errorText = await resendRes.text();
       throw new Error(`Resend API error: ${errorText}`);
-    }
-
-    // Save contact form submission to the messages table
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || (globalThis as any).SUPABASE_URL;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (globalThis as any).SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Supabase service role key or URL not set in environment variables");
-    }
-    const insertRes = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-      method: "POST",
-      headers: {
-        "apikey": supabaseKey,
-        "Authorization": `Bearer ${supabaseKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        subject,
-        content: message,
-        sender_email: email,
-        sender_name: `${firstName} ${lastName}`,
-        phone
-      })
-    });
-    if (!insertRes.ok) {
-      const errorText = await insertRes.text();
-      throw new Error(`Failed to save message to database: ${errorText}`);
     }
 
     const data = await resendRes.json();

@@ -38,6 +38,8 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="animate-fade-in">
+          {/* Removed favicon logo from Hero */}
+
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
             <span className="block">Wakilisha</span>
             <span className="block text-gospel-gold">Gospel Band</span>
@@ -70,7 +72,7 @@ const Hero = () => {
             <Button 
               variant="outline" 
               size="lg"
-              className="border-2 border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg font-semibold transition-all duration-300"
+              className="border-2 border-white text-white hover:bg-white hover:text-gospel-navy px-8 py-3 text-lg font-semibold transition-all duration-300 bg-white/10"
               onClick={handleWatchClick}
             >
               <Play className="mr-2 h-5 w-5" />

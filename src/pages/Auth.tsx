@@ -61,13 +61,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gospel-cream via-white to-gospel-light-gold flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gospel-cream via-white to-gospel-light-gold flex items-center justify-center p-4 pt-24">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-gospel-gold p-3 rounded-full">
-              <img src="/wakilisha-logo.jpeg" alt="Wakilisha Gospel Band Logo" className="h-16 w-16 object-contain rounded-full" />
+              <img src="/favicon.ico" alt="Wakilisha Gospel Band Logo" className="h-16 w-16 object-contain rounded-full" />
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gospel-navy mb-2">Join Our Ministry</h1>

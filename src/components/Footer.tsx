@@ -14,13 +14,13 @@ const Footer = () => {
               and bring hope to communities through the power of music.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-gospel-gold transition-colors">
+              <a href="https://www.facebook.com/profile.php?id=61576359388097" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-gospel-gold transition-colors">
                 <Facebook className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-300 hover:text-gospel-gold transition-colors">
+              <a href="https://www.instagram.com/wg_bannd/" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-gospel-gold transition-colors">
                 <Instagram className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-300 hover:text-gospel-gold transition-colors">
+              <a href="https://www.youtube.com/@WAKILISHAGOSPELBAND" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-gospel-gold transition-colors">
                 <Youtube className="h-6 w-6" />
               </a>
             </div>
@@ -44,15 +44,15 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-gospel-gold" />
-                <span className="text-gray-300 text-sm">info@wakilishagospel.com</span>
+                <span className="text-gray-300 text-sm">info@wakilishagospelband.co.ke</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-gospel-gold" />
-                <span className="text-gray-300 text-sm">+254 123 456 789</span>
+                <span className="text-gray-300 text-sm">+254757756763</span>
               </div>
               <div className="flex items-start space-x-2">
                 <MapPin className="h-4 w-4 text-gospel-gold mt-1" />
-                <span className="text-gray-300 text-sm">Nairobi, Kenya</span>
+                <span className="text-gray-300 text-sm">Kitale, Kenya</span>
               </div>
             </div>
           </div>
@@ -64,11 +64,6 @@ const Footer = () => {
             "Sing to the Lord a new song; sing to the Lord, all the earth."
           </p>
           <p className="text-sm text-gray-400 mb-4">- Psalm 96:1</p>
-          <div className="flex items-center justify-center space-x-1 text-sm text-gray-400">
-            <span>Made with</span>
-            <Heart className="h-4 w-4 text-red-500" />
-            <span>for God's Glory</span>
-          </div>
           <p className="text-xs text-gray-500 mt-2">© 2025 Wakilisha Gospel Band. All rights reserved.</p>
         </div>
       </div>

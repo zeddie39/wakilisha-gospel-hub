@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +13,13 @@ interface Message {
   id: string;
   subject: string;
   content: string;
-  sender_id: string;
-  recipient_id: string;
+  sender_id?: string;
+  recipient_id?: string;
   is_read: boolean;
   created_at: string;
+  sender_name?: string;
+  sender_email?: string;
+  phone?: string;
 }
 
 interface MessageReply {
@@ -238,6 +240,7 @@ const AdminMessages = () => {
     return profiles[userId]?.full_name || 'Unknown User';
   };
 
+  // Main render
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Messages List */}
@@ -278,7 +281,7 @@ const AdminMessages = () => {
                       <p className="text-gray-600 text-xs truncate">{message.content}</p>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-gray-400 text-xs">
-                          From: {getUserName(message.sender_id)}
+                          From: {getUserName(message.sender_id || "")}
                         </p>
                         <p className="text-gray-400 text-xs">{formatDate(message.created_at)}</p>
                       </div>
@@ -290,7 +293,6 @@ const AdminMessages = () => {
           </div>
         </CardContent>
       </Card>
-
       {/* Message Detail */}
       <Card>
         <CardHeader>
@@ -315,18 +317,29 @@ const AdminMessages = () => {
             <div className="space-y-4">
               {/* Original Message */}
               <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center mb-2">
-                  <User className="h-4 w-4 mr-2" />
-                  <span className="text-sm font-medium">
-                    {getUserName(selectedMessage.sender_id)}
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center mb-2 gap-2">
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    <span className="text-sm font-medium">
+                      {selectedMessage.sender_name || getUserName(selectedMessage.sender_id || "")}
+                    </span>
+                  </div>
+                  {selectedMessage.sender_email && (
+                    <span className="text-xs text-blue-700 ml-2">
+                      <a href={`mailto:${selectedMessage.sender_email}`} className="underline">{selectedMessage.sender_email}</a>
+                    </span>
+                  )}
+                  {selectedMessage.phone && (
+                    <span className="text-xs text-gray-700 ml-2">
+                      {selectedMessage.phone}
+                    </span>
+                  )}
                   <span className="text-xs text-gray-500 ml-auto">
                     {formatDate(selectedMessage.created_at)}
                   </span>
                 </div>
-                <p className="text-gray-700">{selectedMessage.content}</p>
+                <p className="text-gray-700 whitespace-pre-line">{selectedMessage.content}</p>
               </div>
-
               {/* Replies */}
               <div className="space-y-3">
                 {replies.map((reply) => (
@@ -344,7 +357,6 @@ const AdminMessages = () => {
                   </div>
                 ))}
               </div>
-
               {/* Reply Form */}
               <div className="border-t pt-4">
                 <Textarea

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PrayerRequest from "./pages/PrayerRequest";
 import BookBand from "./pages/BookBand";
 import NotFound from "./pages/NotFound";
+import BackToTopButton from "@/components/BackToTopButton";
+import EmailConfirmed from "@/pages/EmailConfirmed";
 
 const queryClient = new QueryClient();
 
@@ -69,11 +70,13 @@ const App = () => (
                     <BookBand />
                   </ProtectedRoute>
                 } />
+                <Route path="/email-confirmed" element={<EmailConfirmed />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
             <Footer />
+            <BackToTopButton />
           </div>
         </BrowserRouter>
       </TooltipProvider>
