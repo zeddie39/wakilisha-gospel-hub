@@ -32,7 +32,7 @@ const TeamMembers = () => {
   console.log('teamMembers', teamMembers, 'isLoading', isLoading, 'error', error);
 
   const getIcon = (position: string) => {
-    if (position.includes('CEO') || position.includes('Founder')) return <Crown className="h-6 w-6 text-gospel-gold" aria-label="CEO or Founder" />;
+    if (position.includes('Director and Founder')) return <Crown className="h-6 w-6 text-gospel-gold" aria-label="Director and Founder" />;
     if (position.includes('Director')) return <Music className="h-6 w-6 text-gospel-gold" aria-label="Director" />;
     if (position.includes('Chair')) return <Star className="h-6 w-6 text-gospel-gold" aria-label="Chair" />;
     if (position.includes('Patron')) return <Crown className="h-6 w-6 text-gospel-gold" aria-label="Patron" />;
